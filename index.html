@@ -1519,6 +1519,9 @@
           {},
           COLORS.map((c) => el("option", { value: c }, c)),
         );
+        // Foreslå en farge ingen andre har
+        const used = new Set(state.teachers.map((t) => t.color));
+        color.value = COLORS.find((c) => !used.has(c)) ?? COLORS[0];
         const submit = async () => {
           try {
             await rpc("add_teacher", {
