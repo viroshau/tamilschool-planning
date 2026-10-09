@@ -1415,7 +1415,7 @@
             el(
               "div",
               { class: "weekdays" },
-              el("label", {}, everyone, "Fellesøving (alle lærere, alle sanger)"),
+              el("label", {}, everyone, "Fellesøving (alle lærere, full gjennomgang av program)"),
             ),
             el(
               "button",
@@ -1712,7 +1712,7 @@
         const admin = state.mode === "admin";
         const props = {
           class: "slot everyone" + (admin ? " clickable" : ""),
-          title: "Alle lærere øver alle sanger",
+          title: "Alle lærere: full gjennomgang av program",
         };
         if (admin) {
           props.tabindex = "0";
@@ -1730,7 +1730,7 @@
           props,
           el("div", { class: "tm" }, x.start + "–" + x.end),
           el("span", { class: "all" }, "Fellesøving"),
-          el("span", { class: "who" }, "Alle lærere · alle sanger"),
+          el("span", { class: "who" }, "Full gjennomgang av program"),
         );
       }
 

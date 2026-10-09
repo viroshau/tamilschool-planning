@@ -30,7 +30,7 @@ create table slot (
   date date not null,
   start_time time not null,
   end_time time not null,
-  everyone boolean not null default false   -- fellesøving: alle lærere, alle sanger
+  everyone boolean not null default false   -- fellesøving: alle lærere, full gjennomgang av program
 );
 create index slot_date_idx on slot (date);
 
@@ -152,8 +152,9 @@ notify pgrst, 'reload schema';
 insert into location (name) values ('Gausel'), ('Madla'), ('Lura');
 
 insert into teacher (name, color) values
-  ('Ajantha', 'aqua'), ('Kasthoory', 'violet'), ('Priyanka', 'orange'),
-  ('Abinaya', 'magenta'), ('Mala', 'blue'), ('Kanchana', 'green');
+  ('Ajantha', 'aqua'), ('Casthoory', 'violet'), ('Priyanka', 'orange'),
+  ('Abinaya', 'magenta'), ('Mala', 'blue'), ('Kanchana', 'green'),
+  ('Keerthana', 'red');
 
 -- Gausel: fredag 18–20, lørdag 11–14 (fellesøving), søndag 11–13, hver helg 30.10–20.12
 insert into slot (location_id, date, start_time, end_time, everyone)
