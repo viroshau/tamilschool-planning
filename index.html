@@ -967,7 +967,7 @@
           db
             .from("slot")
             .select(
-              "id, date, start_time, end_time, location_id, everyone, assignment(song_id)",
+              "id, date, start_time, end_time, location_id, everyone, note, assignment(song_id)",
             )
             .order("date")
             .order("start_time"),
@@ -993,6 +993,7 @@
           end: x.end_time.slice(0, 5),
           location_id: x.location_id,
           everyone: x.everyone,
+          note: x.note,
           songs: x.everyone ? [] : x.assignment.map((a) => a.song_id),
         }));
         state.months = [
@@ -1712,7 +1713,7 @@
         const admin = state.mode === "admin";
         const props = {
           class: "slot everyone" + (admin ? " clickable" : ""),
-          title: "Full gjennomgang av program, alle lærere og elever",
+          title: x.note || "Full gjennomgang av program, alle lærere og elever",
         };
         if (admin) {
           props.tabindex = "0";
@@ -1729,8 +1730,16 @@
           "div",
           props,
           el("div", { class: "tm" }, x.start + "–" + x.end),
-          el("span", { class: "all" }, "Fellesøving"),
-          el("span", { class: "who" }, "Full gjennomgang av program, alle lærere og elever"),
+          x.note
+            ? el("span", { class: "all" }, x.note)
+            : [
+                el("span", { class: "all" }, "Fellesøving"),
+                el(
+                  "span",
+                  { class: "who" },
+                  "Full gjennomgang av program, alle lærere og elever",
+                ),
+              ],
         );
       }
 

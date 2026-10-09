@@ -30,7 +30,8 @@ create table slot (
   date date not null,
   start_time time not null,
   end_time time not null,
-  everyone boolean not null default false   -- fellesøving: alle lærere, full gjennomgang av program
+  everyone boolean not null default false,  -- fellesøving: alle lærere, full gjennomgang av program
+  note text                                 -- egen tekst på fellesøving, i stedet for standardteksten
 );
 create index slot_date_idx on slot (date);
 
