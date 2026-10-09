@@ -428,7 +428,7 @@
         height: 22px;
         background: var(--marker);
         opacity: 0.75;
-        z-index: 2;
+        z-index: 4;
       }
       .sheet::before {
         left: 22px;
@@ -440,11 +440,30 @@
       }
       .gridwrap {
         overflow-x: auto;
-        border-radius: 14px;
+        border-radius: 0 0 14px 14px;
+      }
+      /* Steder og måned følger med når man scroller nedover */
+      .sticky-head {
+        position: sticky;
+        top: env(safe-area-inset-top, 0px);
+        z-index: 3;
+        background: var(--surface);
+        border-radius: 14px 14px 0 0;
+        box-shadow: 0 2px 0 var(--line);
+      }
+      .sticky-head[hidden] {
+        display: none;
+      }
+      .sticky-head + .gridwrap {
+        border-radius: 0 0 14px 14px;
+      }
+      .headwrap {
+        overflow: hidden;
+        border-radius: 14px 14px 0 0;
       }
       .grid {
         min-width: max-content;
-        padding: 14px 14px 10px 10px;
+        padding: 6px 14px 10px 10px;
         /* rød marglinje etter dagkolonnen */
         background: linear-gradient(
             90deg,
@@ -464,13 +483,31 @@
         align-items: start;
       }
       .colhead {
-        position: sticky;
-        top: env(safe-area-inset-top, 0px);
-        background: var(--surface);
-        z-index: 1;
-        padding: 0 0 8px;
+        padding: 12px 14px 8px 10px;
+        align-items: center;
       }
-      .colhead div:not(:empty) {
+      .colhead .corner {
+        position: sticky;
+        left: 4px;
+        z-index: 1;
+        background: var(--surface);
+        box-shadow: 0 0 0 8px var(--surface);
+        width: 56px;
+        text-align: center;
+        line-height: 1.05;
+      }
+      .colhead .corner b {
+        display: block;
+        font: 800 17px/1 "Baloo Thambi 2", sans-serif;
+        text-transform: uppercase;
+        color: var(--margin);
+      }
+      .colhead .corner span {
+        font-size: 11px;
+        font-weight: 800;
+        color: var(--muted);
+      }
+      .colhead .loc {
         text-align: center;
         font: 700 16px/1.2 "Baloo Thambi 2", sans-serif;
         background: var(--accent-bg);
@@ -519,7 +556,13 @@
         border-radius: 9px;
         overflow: hidden;
         line-height: 1.2;
-        box-shadow: 2px 2px 0 var(--shadow);
+        /* følger med til venstre når timeplanen scrolles sidelengs */
+        position: sticky;
+        left: 4px;
+        z-index: 1;
+        box-shadow:
+          2px 2px 0 var(--shadow),
+          0 0 0 8px var(--surface);
       }
       .day b {
         display: block;
@@ -621,6 +664,27 @@
       .slot.clickable:hover .add {
         color: var(--accent);
         border-color: var(--accent);
+      }
+      .slot.everyone {
+        background: var(--accent-bg);
+        border-style: double;
+        border-width: 4px;
+        text-align: center;
+      }
+      .slot.everyone .all {
+        display: block;
+        font: 800 14px/1.2 "Baloo Thambi 2", sans-serif;
+        color: var(--accent);
+      }
+      .slot.everyone .all::before {
+        content: "♫ ";
+      }
+      .slot.everyone .who {
+        display: block;
+        padding: 0 5px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--muted);
       }
       .slot .song.dim {
         background: var(--surface-2);
@@ -752,7 +816,12 @@
         <button id="clear" hidden>Vis alle sanger</button>
       </div>
       <div class="sheet">
-        <div class="gridwrap"><div class="grid" id="grid"></div></div>
+        <div class="sticky-head" id="stickyhead" hidden>
+          <div class="headwrap" id="headwrap"></div>
+        </div>
+        <div class="gridwrap" id="gridwrap">
+          <div class="grid" id="grid"></div>
+        </div>
       </div>
     </main>
 
@@ -898,7 +967,7 @@
           db
             .from("slot")
             .select(
-              "id, date, start_time, end_time, location_id, assignment(song_id)",
+              "id, date, start_time, end_time, location_id, everyone, assignment(song_id)",
             )
             .order("date")
             .order("start_time"),
@@ -923,7 +992,8 @@
           start: x.start_time.slice(0, 5),
           end: x.end_time.slice(0, 5),
           location_id: x.location_id,
-          songs: x.assignment.map((a) => a.song_id),
+          everyone: x.everyone,
+          songs: x.everyone ? [] : x.assignment.map((a) => a.song_id),
         }));
         state.months = [
           ...new Set(state.slots.map((x) => x.date.slice(0, 7))),
@@ -988,6 +1058,7 @@
         if (
           state.mode === "elev" &&
           state.selSongs.size &&
+          !x.everyone &&
           !x.songs.some((id) => state.selSongs.has(id))
         )
           return false;
@@ -1295,6 +1366,7 @@
           el("input", { type: "checkbox", value: n }),
         );
         const names = ["Man", "Tir", "Ons", "Tor", "Fre", "Lør", "Søn"];
+        const everyone = el("input", { type: "checkbox" });
         const submit = async () => {
           const wd = days.filter((d) => d.checked).map((d) => Number(d.value));
           if (!from.value || !wd.length) {
@@ -1310,6 +1382,7 @@
               p_weekdays: wd,
               p_start: start.value,
               p_end: end.value,
+              p_everyone: everyone.checked,
             });
             await load();
             say(`La til ${n} økter.`, "ok");
@@ -1338,6 +1411,11 @@
               "div",
               { class: "weekdays" },
               days.map((d, i) => el("label", {}, d, names[i])),
+            ),
+            el(
+              "div",
+              { class: "weekdays" },
+              el("label", {}, everyone, "Fellesøving (alle lærere, alle sanger)"),
             ),
             el(
               "button",
@@ -1419,7 +1497,10 @@
 
       function renderGrid() {
         const g = document.getElementById("grid");
+        const hw = document.getElementById("headwrap");
         g.replaceChildren();
+        hw.replaceChildren();
+        document.getElementById("stickyhead").hidden = true;
         const cols = `64px repeat(${state.locations.length}, minmax(110px, 1fr))`;
         const visible = state.slots.filter(slotVisible);
 
@@ -1446,13 +1527,15 @@
           return;
         }
 
-        const head = el(
-          "div",
-          { class: "gr colhead", style: "grid-template-columns:" + cols },
-          el("div"),
-          state.locations.map((l) => el("div", {}, l.name)),
+        hw.append(
+          el(
+            "div",
+            { class: "gr colhead", style: "grid-template-columns:" + cols },
+            el("div", { class: "corner", id: "curmonth" }),
+            state.locations.map((l) => el("div", { class: "loc" }, l.name)),
+          ),
         );
-        g.append(head);
+        document.getElementById("stickyhead").hidden = false;
 
         const dates = [...new Set(visible.map((x) => x.date))].sort();
         const showMonthHeads =
@@ -1490,7 +1573,11 @@
           }
           const row = el(
             "div",
-            { class: "gr", style: "grid-template-columns:" + cols },
+            {
+              class: "gr",
+              style: "grid-template-columns:" + cols,
+              "data-month": m,
+            },
             el(
               "div",
               { class: "day" },
@@ -1515,9 +1602,44 @@
           }
           g.append(row);
         }
+        syncHead();
+      }
+
+      // Holder den faste overskriften like bred som timeplanen, scrollet likt
+      // sidelengs, og med riktig måned i hjørnet.
+      function syncHead() {
+        const head = document.querySelector("#headwrap .colhead");
+        if (!head) return;
+        head.style.width = document.getElementById("grid").offsetWidth + "px";
+        document.getElementById("headwrap").scrollLeft =
+          document.getElementById("gridwrap").scrollLeft;
+        updateMonth();
+      }
+      function updateMonth() {
+        const corner = document.getElementById("curmonth");
+        if (!corner) return;
+        const top = document
+          .getElementById("headwrap")
+          .getBoundingClientRect().bottom;
+        const rows = document.querySelectorAll("#grid .gr[data-month]");
+        let m = rows.length ? rows[rows.length - 1].dataset.month : null;
+        for (const r of rows)
+          if (r.getBoundingClientRect().bottom > top) {
+            m = r.dataset.month;
+            break;
+          }
+        if (!m || corner.dataset.month === m) return;
+        corner.dataset.month = m;
+        const [y, mo] = m.split("-").map(Number);
+        corner.replaceChildren(
+          el("b", {}, MONTH_SHORT[mo - 1]),
+          el("span", {}, y),
+        );
+        corner.title = monthLabel(m, false);
       }
 
       function slotBlock(x) {
+        if (x.everyone) return everyoneBlock(x);
         const teacher = state.mode === "laerer" && state.actSong;
         const admin = state.mode === "admin";
         const clickable = Boolean(teacher || admin);
@@ -1585,6 +1707,33 @@
         );
       }
 
+      // Fellesøving: forhåndsutfylt for alle, lærere kan ikke legge inn sanger
+      function everyoneBlock(x) {
+        const admin = state.mode === "admin";
+        const props = {
+          class: "slot everyone" + (admin ? " clickable" : ""),
+          title: "Alle lærere øver alle sanger",
+        };
+        if (admin) {
+          props.tabindex = "0";
+          props.role = "button";
+          props.onclick = () => deleteSlot(x);
+          props.onkeydown = (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              deleteSlot(x);
+            }
+          };
+        }
+        return el(
+          "div",
+          props,
+          el("div", { class: "tm" }, x.start + "–" + x.end),
+          el("span", { class: "all" }, "Fellesøving"),
+          el("span", { class: "who" }, "Alle lærere · alle sanger"),
+        );
+      }
+
       async function toggleSong(x) {
         const has = x.songs.includes(state.actSong);
         try {
@@ -1630,6 +1779,23 @@
           state.mode = b.dataset.mode;
           render();
         }),
+      );
+      let monthFrame = 0;
+      window.addEventListener(
+        "scroll",
+        () => {
+          cancelAnimationFrame(monthFrame);
+          monthFrame = requestAnimationFrame(updateMonth);
+        },
+        { passive: true },
+      );
+      window.addEventListener("resize", syncHead);
+      document.getElementById("gridwrap").addEventListener(
+        "scroll",
+        (e) => {
+          document.getElementById("headwrap").scrollLeft = e.target.scrollLeft;
+        },
+        { passive: true },
       );
       document.getElementById("clear").addEventListener("click", () => {
         state.selSongs.clear();

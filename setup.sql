@@ -29,7 +29,8 @@ create table slot (
   location_id int not null references location(id) on delete cascade,
   date date not null,
   start_time time not null,
-  end_time time not null
+  end_time time not null,
+  everyone boolean not null default false   -- fellesøving: alle lærere, alle sanger
 );
 create index slot_date_idx on slot (date);
 
@@ -54,13 +55,18 @@ drop function if exists add_song(int, text, text);
 drop function if exists add_teacher(text, text, text, text);
 drop function if exists add_location(text, text);
 drop function if exists create_slots(int, date, date, int[], time, time, text);
+drop function if exists create_slots(int, date, date, int[], time, time);
 drop function if exists delete_slot(int, text);
 drop table if exists teacher_pin, admin_pin;
 
 create or replace function assign_song(p_slot_id int, p_song_id int) returns void
-language sql security definer set search_path = public as $$
+language plpgsql security definer set search_path = public as $$
+begin
+  if exists (select 1 from slot where id = p_slot_id and everyone) then
+    raise exception 'Dette er fellesøving for alle – du trenger ikke legge inn sanger her';
+  end if;
   insert into assignment (slot_id, song_id) values (p_slot_id, p_song_id) on conflict do nothing;
-$$;
+end $$;
 
 create or replace function unassign_song(p_slot_id int, p_song_id int) returns void
 language sql security definer set search_path = public as $$
@@ -114,15 +120,15 @@ end $$;
 -- p_weekdays bruker ISO-ukedager: 1 = mandag ... 5 = fredag, 6 = lørdag, 7 = søndag
 create or replace function create_slots(
   p_location_id int, p_from date, p_to date, p_weekdays int[],
-  p_start time, p_end time
+  p_start time, p_end time, p_everyone boolean default false
 ) returns int
 language plpgsql security definer set search_path = public as $$
 declare n int;
 begin
   if p_to < p_from then raise exception 'Til-dato må være etter fra-dato'; end if;
   if p_end <= p_start then raise exception 'Slutt må være etter start'; end if;
-  insert into slot (location_id, date, start_time, end_time)
-  select p_location_id, d::date, p_start, p_end
+  insert into slot (location_id, date, start_time, end_time, everyone)
+  select p_location_id, d::date, p_start, p_end, p_everyone
   from generate_series(p_from, p_to, interval '1 day') d
   where extract(isodow from d) = any(p_weekdays);
   get diagnostics n = row_count;
@@ -149,11 +155,12 @@ insert into teacher (name, color) values
   ('Ajantha', 'aqua'), ('Kasthoory', 'violet'), ('Priyanka', 'orange'),
   ('Abinaya', 'magenta'), ('Mala', 'blue'), ('Kanchana', 'green');
 
--- Gausel: fredag 18–20, lørdag 11–14, søndag 11–13, hver helg 30.10–20.12
-insert into slot (location_id, date, start_time, end_time)
+-- Gausel: fredag 18–20, lørdag 11–14 (fellesøving), søndag 11–13, hver helg 30.10–20.12
+insert into slot (location_id, date, start_time, end_time, everyone)
 select (select id from location where name = 'Gausel'), d::date,
        case extract(isodow from d) when 5 then time '18:00' else time '11:00' end,
-       case extract(isodow from d) when 5 then time '20:00' when 6 then time '14:00' else time '13:00' end
+       case extract(isodow from d) when 5 then time '20:00' when 6 then time '14:00' else time '13:00' end,
+       extract(isodow from d) = 6
 from generate_series(date '2026-10-30', date '2026-12-20', interval '1 day') d
 where extract(isodow from d) in (5, 6, 7);
 
