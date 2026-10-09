@@ -1,0 +1,1335 @@
+<!doctype html>
+<html lang="no">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Timeplan for sangøkter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+    <style>
+      :root {
+        --bg: #f4f5f3;
+        --surface: #ffffff;
+        --surface-2: #eceeeb;
+        --ink: #1f2326;
+        --muted: #5f666c;
+        --faint: #979ea3;
+        --line: #d6dad6;
+        --accent: #2d4396;
+        --accent-bg: #e3e8f7;
+        --danger: #a3271f;
+        --ok: #2c6634;
+        box-sizing: border-box;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #15181a;
+          --surface: #1d2124;
+          --surface-2: #262b2e;
+          --ink: #e8eae8;
+          --muted: #a3a9ad;
+          --faint: #6c7378;
+          --line: #353b3f;
+          --accent: #a9b8f0;
+          --accent-bg: #252e4d;
+          --danger: #f0a39c;
+          --ok: #9fd3a6;
+        }
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: inherit;
+      }
+      html {
+        scroll-padding-top: env(safe-area-inset-top, 0px);
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font:
+          15px/1.45 "IBM Plex Sans",
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+      }
+      .wrap {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 20px 16px 48px;
+      }
+      h1 {
+        font-size: 22px;
+        font-weight: 600;
+        margin: 0 0 2px;
+        letter-spacing: -0.01em;
+      }
+      .sub {
+        margin: 0 0 16px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+        color: inherit;
+      }
+      button {
+        cursor: pointer;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-size: 14px;
+      }
+      button:hover {
+        border-color: var(--faint);
+      }
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible,
+      .slot:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      button.primary {
+        background: var(--accent);
+        color: var(--surface);
+        border-color: var(--accent);
+      }
+      input,
+      select {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 6px 10px;
+        font-size: 14px;
+        min-width: 0;
+      }
+      label {
+        font-size: 13px;
+        color: var(--muted);
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .seg {
+        display: flex;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 14px;
+        background: var(--surface);
+      }
+      .seg button {
+        flex: 1;
+        border: none;
+        border-radius: 0;
+        padding: 8px;
+        background: transparent;
+      }
+      .seg button + button {
+        border-left: 1px solid var(--line);
+      }
+      .seg button[aria-pressed="true"] {
+        background: var(--accent-bg);
+        color: var(--accent);
+        font-weight: 500;
+      }
+
+      .panel {
+        margin-bottom: 12px;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+      .teacher-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .teacher-btn[aria-pressed="true"] {
+        outline: 2px solid var(--accent);
+        outline-offset: 0;
+      }
+      .teacher-btn.off {
+        color: var(--faint);
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        background: var(--tfg);
+        display: inline-block;
+        flex: none;
+      }
+      .chip {
+        border-radius: 999px;
+        padding: 4px 12px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .chip[aria-pressed="true"] {
+        background: var(--tbg, var(--accent-bg));
+        color: var(--tfg, var(--accent));
+        border-color: var(--tfg, var(--accent));
+      }
+      .label {
+        font-size: 13px;
+        color: var(--muted);
+        margin-right: 2px;
+      }
+      .inline-form {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .inline-form input {
+        flex: 1 1 160px;
+      }
+
+      details.admin {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+      }
+      details.admin summary {
+        cursor: pointer;
+        font-weight: 500;
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+        align-items: end;
+      }
+      .weekdays {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+      }
+      .weekdays label {
+        flex-direction: row;
+        align-items: center;
+        gap: 3px;
+        color: var(--ink);
+      }
+
+      .months {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+      .filterbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        min-height: 32px;
+        margin-bottom: 8px;
+      }
+      .msg {
+        margin: 0;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .msg.err {
+        color: var(--danger);
+      }
+      .msg.ok {
+        color: var(--ok);
+      }
+
+      .gridwrap {
+        overflow-x: auto;
+      }
+      .grid {
+        min-width: max-content;
+      }
+      .gr {
+        display: grid;
+        gap: 5px;
+        align-items: start;
+      }
+      .colhead {
+        position: sticky;
+        top: env(safe-area-inset-top, 0px);
+        background: var(--bg);
+        z-index: 1;
+        padding: 6px 0;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .colhead div {
+        text-align: center;
+      }
+      .month-h {
+        font-size: 17px;
+        font-weight: 600;
+        margin: 22px 0 4px;
+        text-transform: capitalize;
+      }
+      .week-h {
+        font-size: 12px;
+        color: var(--faint);
+        margin: 12px 0 5px;
+        padding-top: 6px;
+        border-top: 1px solid var(--line);
+      }
+      .day {
+        font-size: 13px;
+        line-height: 1.3;
+        padding-top: 3px;
+      }
+      .day b {
+        font-weight: 500;
+      }
+      .day span {
+        color: var(--muted);
+      }
+      .cell {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-bottom: 5px;
+      }
+      .empty-cell {
+        text-align: center;
+        color: var(--faint);
+        font-size: 13px;
+        padding-top: 3px;
+      }
+
+      .slot {
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        overflow: hidden;
+        background: var(--surface);
+        font-size: 13px;
+      }
+      .slot.free {
+        border-style: dashed;
+        background: transparent;
+        text-align: center;
+        color: var(--muted);
+        padding: 4px;
+      }
+      .slot.clickable {
+        cursor: pointer;
+      }
+      .slot.clickable:hover {
+        border-color: var(--faint);
+      }
+      .slot .tm {
+        padding: 3px 7px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .slot .song {
+        display: block;
+        padding: 3px 7px;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        background: var(--tbg);
+        color: var(--tfg);
+        border-top: 1px solid var(--surface);
+      }
+      .slot .song.dim {
+        background: var(--surface-2);
+        color: var(--faint);
+        font-weight: 400;
+      }
+      .notice {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 16px;
+      }
+      .notice code {
+        font-size: 13px;
+      }
+
+      /* Lærerfarger: lys og mørk variant */
+      .c-aqua {
+        --tbg: #d6f0ec;
+        --tfg: #0d5c54;
+      }
+      .c-violet {
+        --tbg: #e8e2f8;
+        --tfg: #4b3a8c;
+      }
+      .c-orange {
+        --tbg: #fbe5d3;
+        --tfg: #8a4210;
+      }
+      .c-magenta {
+        --tbg: #f7dcea;
+        --tfg: #8c1f5a;
+      }
+      .c-blue {
+        --tbg: #dce8f8;
+        --tfg: #1f4f8c;
+      }
+      .c-green {
+        --tbg: #dff0d8;
+        --tfg: #2f6a1f;
+      }
+      .c-red {
+        --tbg: #f8dcdc;
+        --tfg: #8c2020;
+      }
+      .c-yellow {
+        --tbg: #f6edc8;
+        --tfg: #6b5410;
+      }
+      @media (prefers-color-scheme: dark) {
+        .c-aqua {
+          --tbg: #173f3b;
+          --tfg: #8fd8cd;
+        }
+        .c-violet {
+          --tbg: #2e2650;
+          --tfg: #c3b6f2;
+        }
+        .c-orange {
+          --tbg: #4a2a14;
+          --tfg: #f2b88a;
+        }
+        .c-magenta {
+          --tbg: #4a1d36;
+          --tfg: #efa6cb;
+        }
+        .c-blue {
+          --tbg: #1c2f4d;
+          --tfg: #a5c4ef;
+        }
+        .c-green {
+          --tbg: #22381b;
+          --tfg: #a9d897;
+        }
+        .c-red {
+          --tbg: #4a1e1e;
+          --tfg: #efa3a3;
+        }
+        .c-yellow {
+          --tbg: #3f3514;
+          --tfg: #e8d48a;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <h1>Timeplan for sangøkter</h1>
+      <p class="sub" id="sub">Laster timeplanen …</p>
+      <div class="seg" id="modes">
+        <button data-mode="elev">Elev</button>
+        <button data-mode="laerer">Lærer</button>
+        <button data-mode="admin">Admin</button>
+      </div>
+      <section class="panel" id="panel"></section>
+      <div class="months" id="months"></div>
+      <div class="filterbar">
+        <p class="msg" id="msg"></p>
+        <button id="clear" hidden>Vis alle sanger</button>
+      </div>
+      <div class="gridwrap"><div class="grid" id="grid"></div></div>
+    </main>
+
+    <script>
+      // ---------------------------------------------------------------
+      // Konfigurasjon: fyll inn fra Supabase → Project Settings → API
+      // ---------------------------------------------------------------
+      const SUPABASE_URL = "https://oyftodvtqttwrhdlztvj.supabase.co";
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95ZnRvZHZ0cXR0d3JoZGx6dHZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1MjEzMzksImV4cCI6MjEwNzA5NzMzOX0.1MFFrEEPAkcIKkOMXyWK7quGmmKU4XE6NlNiPT11QG4";
+
+      const COLORS = [
+        "aqua",
+        "violet",
+        "orange",
+        "magenta",
+        "blue",
+        "green",
+        "red",
+        "yellow",
+      ];
+      const DAY = ["Søn", "Man", "Tir", "Ons", "Tor", "Fre", "Lør"];
+      const MONTH = [
+        "januar",
+        "februar",
+        "mars",
+        "april",
+        "mai",
+        "juni",
+        "juli",
+        "august",
+        "september",
+        "oktober",
+        "november",
+        "desember",
+      ];
+      const MONTH_SHORT = [
+        "jan",
+        "feb",
+        "mar",
+        "apr",
+        "mai",
+        "jun",
+        "jul",
+        "aug",
+        "sep",
+        "okt",
+        "nov",
+        "des",
+      ];
+
+      const state = {
+        mode: "elev",
+        teachers: [], // {id, name, color}
+        songs: [], // {id, title, teacher_id}
+        locations: [], // {id, name}
+        slots: [], // {id, date, start, end, location_id, songs: [song_id]}
+        months: [], // ["2026-10", ...]
+        selMonths: new Set(),
+        selSongs: new Set(),
+        actTeacher: null,
+        actSong: null,
+        msg: "",
+        msgKind: "",
+      };
+
+      let db;
+
+      // ---------- små hjelpere ----------
+      function el(tag, props = {}, ...kids) {
+        const e = document.createElement(tag);
+        for (const [k, v] of Object.entries(props)) {
+          if (v === false || v == null) continue;
+          if (k === "class") e.className = v;
+          else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+          else e.setAttribute(k, v === true ? "" : v);
+        }
+        for (const c of kids.flat()) {
+          if (c == null || c === false) continue;
+          e.append(c instanceof Node ? c : document.createTextNode(String(c)));
+        }
+        return e;
+      }
+      async function rpc(name, args) {
+        const { data, error } = await db.rpc(name, args);
+        if (error) throw new Error(error.message);
+        return data;
+      }
+      function say(text, kind = "") {
+        state.msg = text;
+        state.msgKind = kind;
+      }
+      function parseDate(s) {
+        const [y, m, d] = s.split("-").map(Number);
+        return new Date(y, m - 1, d);
+      }
+      function fmtDate(s) {
+        const d = parseDate(s);
+        return (
+          String(d.getDate()).padStart(2, "0") +
+          "." +
+          String(d.getMonth() + 1).padStart(2, "0")
+        );
+      }
+      function weekKey(s) {
+        const d = parseDate(s);
+        d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+        return (
+          d.getFullYear() +
+          "-" +
+          String(d.getMonth() + 1).padStart(2, "0") +
+          "-" +
+          String(d.getDate()).padStart(2, "0")
+        );
+      }
+      function monthLabel(key, short) {
+        const [y, m] = key.split("-").map(Number);
+        return short ? MONTH_SHORT[m - 1] + " " + y : MONTH[m - 1] + " " + y;
+      }
+      const teacherById = (id) => state.teachers.find((t) => t.id === id);
+      const songById = (id) => state.songs.find((s) => s.id === id);
+      const colorClass = (t) =>
+        "c-" + (COLORS.includes(t?.color) ? t.color : "blue");
+
+      // ---------- data ----------
+      async function load() {
+        const [t, l, s] = await Promise.all([
+          db
+            .from("teacher")
+            .select("id, name, color, song(id, title)")
+            .order("id"),
+          db.from("location").select("id, name").order("id"),
+          db
+            .from("slot")
+            .select(
+              "id, date, start_time, end_time, location_id, assignment(song_id)",
+            )
+            .order("date")
+            .order("start_time"),
+        ]);
+        const err = t.error || l.error || s.error;
+        if (err) throw new Error(err.message);
+
+        state.teachers = t.data.map((x) => ({
+          id: x.id,
+          name: x.name,
+          color: x.color,
+        }));
+        state.songs = t.data.flatMap((x) =>
+          x.song
+            .sort((a, b) => a.id - b.id)
+            .map((sg) => ({ id: sg.id, title: sg.title, teacher_id: x.id })),
+        );
+        state.locations = l.data;
+        state.slots = s.data.map((x) => ({
+          id: x.id,
+          date: x.date,
+          start: x.start_time.slice(0, 5),
+          end: x.end_time.slice(0, 5),
+          location_id: x.location_id,
+          songs: x.assignment.map((a) => a.song_id),
+        }));
+        state.months = [
+          ...new Set(state.slots.map((x) => x.date.slice(0, 7))),
+        ].sort();
+
+        for (const id of [...state.selSongs])
+          if (!songById(id)) state.selSongs.delete(id);
+        if (state.actSong && !songById(state.actSong)) state.actSong = null;
+      }
+
+      let reloadTimer;
+      function scheduleReload() {
+        clearTimeout(reloadTimer);
+        reloadTimer = setTimeout(async () => {
+          try {
+            await load();
+            render();
+          } catch (e) {
+            console.error(e);
+          }
+        }, 400);
+      }
+
+      // ---------- URL ----------
+      function readUrl() {
+        const p = new URLSearchParams(window.location.search);
+        const m = p.get("maned"),
+          s = p.get("sang");
+        if (m) m.split(",").forEach((x) => state.selMonths.add(x));
+        if (s)
+          s.split(",")
+            .map(Number)
+            .filter(Boolean)
+            .forEach((x) => state.selSongs.add(x));
+        return Boolean(m);
+      }
+      function writeUrl() {
+        const p = new URLSearchParams();
+        if (state.selMonths.size)
+          p.set("maned", [...state.selMonths].sort().join(","));
+        if (state.selSongs.size) p.set("sang", [...state.selSongs].join(","));
+        const qs = p.toString().replace(/%2C/g, ",");
+        history.replaceState(
+          null,
+          "",
+          window.location.pathname + (qs ? "?" + qs : ""),
+        );
+      }
+      function defaultMonths() {
+        const now = new Date();
+        const cur =
+          now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
+        const upcoming = state.months.filter((m) => m >= cur);
+        if (upcoming.length && upcoming.length < state.months.length)
+          upcoming.forEach((m) => state.selMonths.add(m));
+      }
+
+      // ---------- filtrering ----------
+      function slotVisible(x) {
+        if (state.selMonths.size && !state.selMonths.has(x.date.slice(0, 7)))
+          return false;
+        if (
+          state.mode === "elev" &&
+          state.selSongs.size &&
+          !x.songs.some((id) => state.selSongs.has(id))
+        )
+          return false;
+        return true;
+      }
+
+      // ---------- tegning ----------
+      function render() {
+        document
+          .querySelectorAll("#modes button")
+          .forEach((b) =>
+            b.setAttribute(
+              "aria-pressed",
+              String(b.dataset.mode === state.mode),
+            ),
+          );
+        renderPanel();
+        renderMonths();
+        renderMsg();
+        renderGrid();
+        writeUrl();
+        const n = state.slots.length;
+        document.getElementById("sub").textContent = n
+          ? `${n} økter på ${state.locations.length} steder`
+          : "Ingen økter lagt inn ennå.";
+      }
+
+      function renderMsg() {
+        const msg = document.getElementById("msg");
+        let text = state.msg,
+          kind = state.msgKind;
+        if (!text) {
+          if (state.mode === "elev") {
+            text = state.selSongs.size
+              ? "Viser økter for " +
+                [...state.selSongs]
+                  .map((id) => songById(id)?.title)
+                  .filter(Boolean)
+                  .join(", ") +
+                "."
+              : "Velg lærer eller sang for å se bare dine økter.";
+          } else if (state.mode === "laerer") {
+            const t = teacherById(state.actTeacher);
+            if (!t) text = "Velg navnet ditt for å legge inn sanger.";
+            else if (!state.actSong) text = "Velg eller legg til en sang.";
+            else
+              text = `Trykk på en økt for å legge inn eller fjerne «${songById(state.actSong).title}».`;
+          } else {
+            text = "Trykk på en økt for å slette den.";
+          }
+        }
+        msg.textContent = text;
+        msg.className = "msg" + (kind ? " " + kind : "");
+        state.msg = "";
+        state.msgKind = "";
+        const clear = document.getElementById("clear");
+        clear.hidden = !(state.mode === "elev" && state.selSongs.size);
+      }
+
+      function renderMonths() {
+        const box = document.getElementById("months");
+        box.replaceChildren();
+        if (state.months.length < 2) return;
+        box.append(
+          el(
+            "button",
+            {
+              class: "chip",
+              "aria-pressed": String(!state.selMonths.size),
+              onclick: () => {
+                state.selMonths.clear();
+                render();
+              },
+            },
+            "Alle måneder",
+          ),
+        );
+        for (const m of state.months) {
+          box.append(
+            el(
+              "button",
+              {
+                class: "chip",
+                "aria-pressed": String(state.selMonths.has(m)),
+                onclick: () => {
+                  state.selMonths.has(m)
+                    ? state.selMonths.delete(m)
+                    : state.selMonths.add(m);
+                  render();
+                },
+              },
+              monthLabel(m, true),
+            ),
+          );
+        }
+      }
+
+      function teacherButton(t, pressed, extraClass, onclick) {
+        return el(
+          "button",
+          {
+            class:
+              "teacher-btn " +
+              colorClass(t) +
+              (extraClass ? " " + extraClass : ""),
+            "aria-pressed": String(pressed),
+            onclick,
+          },
+          el("span", { class: "dot" }),
+          t.name,
+        );
+      }
+
+      function renderPanel() {
+        const p = document.getElementById("panel");
+        p.replaceChildren();
+
+        if (state.mode === "elev") {
+          if (!state.songs.length) {
+            p.append(
+              el("p", { class: "msg" }, "Ingen sanger er lagt inn ennå."),
+            );
+            return;
+          }
+          for (const t of state.teachers) {
+            const mine = state.songs.filter((s) => s.teacher_id === t.id);
+            if (!mine.length) continue;
+            const all = mine.every((s) => state.selSongs.has(s.id));
+            const some = mine.some((s) => state.selSongs.has(s.id));
+            p.append(
+              el(
+                "div",
+                { class: "row" },
+                teacherButton(
+                  t,
+                  all,
+                  state.selSongs.size && !some ? "off" : "",
+                  () => {
+                    mine.forEach((s) =>
+                      all
+                        ? state.selSongs.delete(s.id)
+                        : state.selSongs.add(s.id),
+                    );
+                    render();
+                  },
+                ),
+                mine.map((s) =>
+                  el(
+                    "button",
+                    {
+                      class: "chip " + colorClass(t),
+                      "aria-pressed": String(state.selSongs.has(s.id)),
+                      onclick: () => {
+                        state.selSongs.has(s.id)
+                          ? state.selSongs.delete(s.id)
+                          : state.selSongs.add(s.id);
+                        render();
+                      },
+                    },
+                    s.title,
+                  ),
+                ),
+              ),
+            );
+          }
+          return;
+        }
+
+        if (state.mode === "laerer") {
+          p.append(
+            el(
+              "div",
+              { class: "row" },
+              state.teachers.map((t) =>
+                teacherButton(t, state.actTeacher === t.id, "", () => {
+                  state.actTeacher = t.id;
+                  state.actSong =
+                    state.songs.find((s) => s.teacher_id === t.id)?.id ?? null;
+                  render();
+                }),
+              ),
+            ),
+          );
+          const t = teacherById(state.actTeacher);
+          if (!t) return;
+          const mine = state.songs.filter((s) => s.teacher_id === t.id);
+          p.append(
+            el(
+              "div",
+              { class: "row" },
+              el("span", { class: "label" }, "Sang"),
+              mine.length
+                ? mine.map((s) =>
+                    el(
+                      "button",
+                      {
+                        class: "chip " + colorClass(t),
+                        "aria-pressed": String(state.actSong === s.id),
+                        onclick: () => {
+                          state.actSong = s.id;
+                          render();
+                        },
+                      },
+                      s.title,
+                    ),
+                  )
+                : el("span", { class: "label" }, "ingen ennå"),
+            ),
+          );
+          const title = el("input", { type: "text", placeholder: "Ny sang" });
+          const addSong = async () => {
+            if (!title.value.trim()) return;
+            try {
+              const id = await rpc("add_song", {
+                p_teacher_id: t.id,
+                p_title: title.value,
+              });
+              await load();
+              state.actSong = id;
+              say("La til «" + title.value.trim() + "».", "ok");
+            } catch (e) {
+              say(e.message, "err");
+            }
+            render();
+          };
+          title.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") addSong();
+          });
+          p.append(
+            el(
+              "div",
+              { class: "inline-form" },
+              title,
+              el("button", { onclick: addSong }, "Legg til sang"),
+            ),
+          );
+          return;
+        }
+
+        // admin
+        p.append(adminSlots(), adminTeacher(), adminLocation());
+      }
+
+      function adminSlots() {
+        const loc = el(
+          "select",
+          {},
+          state.locations.map((l) => el("option", { value: l.id }, l.name)),
+        );
+        const from = el("input", { type: "date" }),
+          to = el("input", { type: "date" });
+        const start = el("input", { type: "time", value: "11:00" }),
+          end = el("input", { type: "time", value: "13:00" });
+        const days = [1, 2, 3, 4, 5, 6, 7].map((n) =>
+          el("input", { type: "checkbox", value: n }),
+        );
+        const names = ["Man", "Tir", "Ons", "Tor", "Fre", "Lør", "Søn"];
+        const submit = async () => {
+          const wd = days.filter((d) => d.checked).map((d) => Number(d.value));
+          if (!from.value || !wd.length) {
+            say("Velg minst fra-dato og én ukedag.", "err");
+            render();
+            return;
+          }
+          try {
+            const n = await rpc("create_slots", {
+              p_location_id: Number(loc.value),
+              p_from: from.value,
+              p_to: to.value || from.value,
+              p_weekdays: wd,
+              p_start: start.value,
+              p_end: end.value,
+            });
+            await load();
+            say(`La til ${n} økter.`, "ok");
+          } catch (e) {
+            say(e.message, "err");
+          }
+          render();
+        };
+        return el(
+          "details",
+          { class: "admin" },
+          el("summary", {}, "Legg til økter"),
+          el(
+            "div",
+            { class: "form-grid" },
+            el("label", {}, "Sted", loc),
+            el("label", {}, "Fra dato", from),
+            el("label", {}, "Til dato (tom = én dag)", to),
+            el("label", {}, "Start", start),
+            el("label", {}, "Slutt", end),
+          ),
+          el(
+            "div",
+            { class: "form-grid" },
+            el(
+              "div",
+              { class: "weekdays" },
+              days.map((d, i) => el("label", {}, d, names[i])),
+            ),
+            el(
+              "button",
+              { class: "primary", onclick: submit },
+              "Legg til økter",
+            ),
+          ),
+        );
+      }
+
+      function adminTeacher() {
+        const name = el("input", { type: "text", placeholder: "Navn" });
+        const color = el(
+          "select",
+          {},
+          COLORS.map((c) => el("option", { value: c }, c)),
+        );
+        const submit = async () => {
+          try {
+            await rpc("add_teacher", {
+              p_name: name.value,
+              p_color: color.value,
+            });
+            await load();
+            say("La til " + name.value.trim() + ".", "ok");
+          } catch (e) {
+            say(e.message, "err");
+          }
+          render();
+        };
+        return el(
+          "details",
+          { class: "admin" },
+          el("summary", {}, "Legg til lærer"),
+          el(
+            "div",
+            { class: "form-grid" },
+            el("label", {}, "Navn", name),
+            el("label", {}, "Farge", color),
+            el(
+              "button",
+              { class: "primary", onclick: submit },
+              "Legg til lærer",
+            ),
+          ),
+        );
+      }
+
+      function adminLocation() {
+        const name = el("input", { type: "text", placeholder: "Navn på sted" });
+        const submit = async () => {
+          try {
+            await rpc("add_location", {
+              p_name: name.value,
+            });
+            await load();
+            say("La til " + name.value.trim() + ".", "ok");
+          } catch (e) {
+            say(e.message, "err");
+          }
+          render();
+        };
+        return el(
+          "details",
+          { class: "admin" },
+          el("summary", {}, "Legg til sted"),
+          el(
+            "div",
+            { class: "form-grid" },
+            el("label", {}, "Sted", name),
+            el(
+              "button",
+              { class: "primary", onclick: submit },
+              "Legg til sted",
+            ),
+          ),
+        );
+      }
+
+      function renderGrid() {
+        const g = document.getElementById("grid");
+        g.replaceChildren();
+        const cols = `64px repeat(${state.locations.length}, minmax(110px, 1fr))`;
+        const visible = state.slots.filter(slotVisible);
+
+        if (!state.locations.length) {
+          g.append(
+            el(
+              "p",
+              { class: "msg" },
+              "Ingen steder er lagt inn ennå. Legg til et sted i Admin.",
+            ),
+          );
+          return;
+        }
+        if (!visible.length) {
+          g.append(
+            el(
+              "p",
+              { class: "msg" },
+              state.slots.length
+                ? "Ingen økter passer filteret. Velg flere måneder eller sanger."
+                : "Ingen økter er lagt inn ennå. Legg til økter i Admin.",
+            ),
+          );
+          return;
+        }
+
+        const head = el(
+          "div",
+          { class: "gr colhead", style: "grid-template-columns:" + cols },
+          el("div"),
+          state.locations.map((l) => el("div", {}, l.name)),
+        );
+        g.append(head);
+
+        const dates = [...new Set(visible.map((x) => x.date))].sort();
+        const showMonthHeads =
+          new Set(dates.map((d) => d.slice(0, 7))).size > 1;
+        let curMonth = null,
+          curWeek = null;
+
+        for (let i = 0; i < dates.length; i++) {
+          const d = dates[i];
+          const m = d.slice(0, 7),
+            w = weekKey(d);
+          if (m !== curMonth) {
+            curMonth = m;
+            curWeek = null;
+            if (showMonthHeads)
+              g.append(el("div", { class: "month-h" }, monthLabel(m, false)));
+          }
+          if (w !== curWeek) {
+            curWeek = w;
+            const inWeek = dates.filter(
+              (x) => weekKey(x) === w && x.slice(0, 7) === m,
+            );
+            const label =
+              inWeek.length > 1
+                ? fmtDate(inWeek[0]) + "–" + fmtDate(inWeek[inWeek.length - 1])
+                : fmtDate(inWeek[0]);
+            g.append(el("div", { class: "week-h" }, label));
+          }
+          const row = el(
+            "div",
+            { class: "gr", style: "grid-template-columns:" + cols },
+            el(
+              "div",
+              { class: "day" },
+              el("b", {}, DAY[parseDate(d).getDay()]),
+              " ",
+              el("span", {}, fmtDate(d)),
+            ),
+          );
+          for (const l of state.locations) {
+            const xs = visible.filter(
+              (x) => x.date === d && x.location_id === l.id,
+            );
+            row.append(
+              el(
+                "div",
+                { class: "cell" },
+                xs.length
+                  ? xs.map(slotBlock)
+                  : el("div", { class: "empty-cell" }, "·"),
+              ),
+            );
+          }
+          g.append(row);
+        }
+      }
+
+      function slotBlock(x) {
+        const teacher = state.mode === "laerer" && state.actSong;
+        const admin = state.mode === "admin";
+        const clickable = Boolean(teacher || admin);
+        const songs = x.songs
+          .map(songById)
+          .filter(Boolean)
+          .sort(
+            (a, b) =>
+              state.teachers.findIndex((t) => t.id === a.teacher_id) -
+                state.teachers.findIndex((t) => t.id === b.teacher_id) ||
+              a.id - b.id,
+          );
+
+        const props = {
+          class:
+            "slot" +
+            (songs.length ? "" : " free") +
+            (clickable ? " clickable" : ""),
+        };
+        if (clickable) {
+          props.tabindex = "0";
+          props.role = "button";
+          props.onclick = () => (admin ? deleteSlot(x) : toggleSong(x));
+          props.onkeydown = (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              props.onclick();
+            }
+          };
+        }
+        if (!songs.length)
+          return el("div", props, x.start + "–" + x.end, el("br"), "Ledig");
+        return el(
+          "div",
+          props,
+          el("div", { class: "tm" }, x.start + "–" + x.end),
+          songs.map((s) => {
+            const t = teacherById(s.teacher_id);
+            const dim =
+              state.mode === "elev" &&
+              state.selSongs.size &&
+              !state.selSongs.has(s.id);
+            return el(
+              "span",
+              {
+                class: "song " + colorClass(t) + (dim ? " dim" : ""),
+                title: s.title + " – " + (t?.name ?? ""),
+              },
+              s.title,
+            );
+          }),
+        );
+      }
+
+      async function toggleSong(x) {
+        const has = x.songs.includes(state.actSong);
+        try {
+          await rpc(has ? "unassign_song" : "assign_song", {
+            p_slot_id: x.id,
+            p_song_id: state.actSong,
+          });
+          if (has) x.songs = x.songs.filter((id) => id !== state.actSong);
+          else x.songs.push(state.actSong);
+        } catch (e) {
+          say(e.message, "err");
+        }
+        render();
+      }
+
+      async function deleteSlot(x) {
+        const loc =
+          state.locations.find((l) => l.id === x.location_id)?.name ?? "";
+        const extra = x.songs.length
+          ? ` Den har ${x.songs.length} sang(er) som også fjernes.`
+          : "";
+        if (
+          !confirm(
+            `Slette økten ${loc} ${fmtDate(x.date)} ${x.start}–${x.end}?${extra}`,
+          )
+        )
+          return;
+        try {
+          await rpc("delete_slot", {
+            p_slot_id: x.id,
+          });
+          await load();
+          say("Økten er slettet.", "ok");
+        } catch (e) {
+          say(e.message, "err");
+        }
+        render();
+      }
+
+      // ---------- oppstart ----------
+      document.querySelectorAll("#modes button").forEach((b) =>
+        b.addEventListener("click", () => {
+          state.mode = b.dataset.mode;
+          render();
+        }),
+      );
+      document.getElementById("clear").addEventListener("click", () => {
+        state.selSongs.clear();
+        render();
+      });
+
+      (async function start() {
+        if (
+          SUPABASE_URL.includes("your-project") ||
+          SUPABASE_ANON_KEY === "your-anon-key"
+        ) {
+          document.getElementById("sub").textContent = "";
+          document
+            .getElementById("grid")
+            .replaceChildren(
+              el(
+                "div",
+                { class: "notice" },
+                el("p", {}, "Siden er ikke koblet til databasen ennå."),
+                el(
+                  "p",
+                  {},
+                  "Åpne index.html og fyll inn ",
+                  el("code", {}, "SUPABASE_URL"),
+                  " og ",
+                  el("code", {}, "SUPABASE_ANON_KEY"),
+                  " fra Supabase under Project Settings → API.",
+                ),
+              ),
+            );
+          return;
+        }
+        db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const hadMonths = readUrl();
+        try {
+          await load();
+        } catch (e) {
+          document.getElementById("sub").textContent = "";
+          document
+            .getElementById("grid")
+            .replaceChildren(
+              el(
+                "div",
+                { class: "notice" },
+                el("p", {}, "Fikk ikke lastet timeplanen: " + e.message),
+                el(
+                  "p",
+                  {},
+                  "Sjekk at setup.sql er kjørt i Supabase, og at URL og nøkkel stemmer.",
+                ),
+              ),
+            );
+          return;
+        }
+        if (!hadMonths) defaultMonths();
+        render();
+
+        db.channel("timeplan")
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "assignment" },
+            scheduleReload,
+          )
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "slot" },
+            scheduleReload,
+          )
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "song" },
+            scheduleReload,
+          )
+          .subscribe();
+      })();
+    </script>
+  </body>
+</html>
