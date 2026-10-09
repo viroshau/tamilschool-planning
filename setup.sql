@@ -76,6 +76,23 @@ begin
   return new_id;
 end $$;
 
+create or replace function rename_song(p_song_id int, p_title text) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if length(trim(p_title)) = 0 then raise exception 'Sangen må ha en tittel'; end if;
+  if exists (select 1 from song s join song o on o.teacher_id = s.teacher_id
+             where s.id = p_song_id and o.id <> p_song_id and o.title = trim(p_title)) then
+    raise exception 'Du har allerede en sang med det navnet';
+  end if;
+  update song set title = trim(p_title) where id = p_song_id;
+end $$;
+
+-- Fjerner også sangen fra alle økter den er lagt inn på
+create or replace function delete_song(p_song_id int) returns void
+language sql security definer set search_path = public as $$
+  delete from song where id = p_song_id;
+$$;
+
 create or replace function add_teacher(p_name text, p_color text) returns int
 language plpgsql security definer set search_path = public as $$
 declare new_id int;
@@ -118,6 +135,9 @@ language sql security definer set search_path = public as $$
 $$;
 
 grant execute on all functions in schema public to anon;
+
+-- Be Supabase-API-et laste inn funksjonene på nytt
+notify pgrst, 'reload schema';
 
 -- =====================================================================
 -- Del 3: Startdata fra notatboka

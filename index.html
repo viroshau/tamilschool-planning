@@ -360,6 +360,17 @@
         color: var(--tfg);
         border-top: 1px solid var(--surface);
       }
+      .slot .add {
+        display: block;
+        padding: 2px 7px;
+        font-size: 12px;
+        color: var(--muted);
+        border-top: 1px dashed var(--line);
+        text-align: center;
+      }
+      .slot.clickable:hover .add {
+        color: var(--accent);
+      }
       .slot .song.dim {
         background: var(--surface-2);
         color: var(--faint);
@@ -729,7 +740,7 @@
             if (!t) text = "Velg navnet ditt for å legge inn sanger.";
             else if (!state.actSong) text = "Velg eller legg til en sang.";
             else
-              text = `Trykk på en økt for å legge inn eller fjerne «${songById(state.actSong).title}».`;
+              text = `Trykk på en økt for å legge inn eller fjerne «${songById(state.actSong).title}». Det går fint å dele en økt med andre lærere.`;
           } else {
             text = "Trykk på en økt for å slette den.";
           }
@@ -892,6 +903,56 @@
                 : el("span", { class: "label" }, "ingen ennå"),
             ),
           );
+          const cur = mine.find((s) => s.id === state.actSong);
+          if (cur) {
+            const rename = el("input", { type: "text", value: cur.title });
+            const saveName = async () => {
+              const next = rename.value.trim();
+              if (!next || next === cur.title) return;
+              try {
+                await rpc("rename_song", {
+                  p_song_id: cur.id,
+                  p_title: next,
+                });
+                await load();
+                say("Endret «" + cur.title + "» til «" + next + "».", "ok");
+              } catch (e) {
+                say(e.message, "err");
+              }
+              render();
+            };
+            const removeSong = async () => {
+              const n = state.slots.filter((x) =>
+                x.songs.includes(cur.id),
+              ).length;
+              const extra = n
+                ? ` Den fjernes også fra ${n} ${n === 1 ? "økt" : "økter"}.`
+                : "";
+              if (!confirm(`Slette «${cur.title}»?${extra}`)) return;
+              try {
+                await rpc("delete_song", { p_song_id: cur.id });
+                await load();
+                state.actSong =
+                  state.songs.find((s) => s.teacher_id === t.id)?.id ?? null;
+                say("Slettet «" + cur.title + "».", "ok");
+              } catch (e) {
+                say(e.message, "err");
+              }
+              render();
+            };
+            rename.addEventListener("keydown", (e) => {
+              if (e.key === "Enter") saveName();
+            });
+            p.append(
+              el(
+                "div",
+                { class: "inline-form" },
+                rename,
+                el("button", { onclick: saveName }, "Rett navn"),
+                el("button", { onclick: removeSong }, "Slett sang"),
+              ),
+            );
+          }
           const title = el("input", { type: "text", placeholder: "Ny sang" });
           const addSong = async () => {
             if (!title.value.trim()) return;
@@ -1186,8 +1247,20 @@
             }
           };
         }
+        const canAdd = teacher && !x.songs.includes(state.actSong);
+        if (teacher)
+          props["aria-label"] =
+            `${x.start}–${x.end}: ` +
+            (canAdd ? "legg til" : "fjern") +
+            ` «${songById(state.actSong)?.title}»`;
         if (!songs.length)
-          return el("div", props, x.start + "–" + x.end, el("br"), "Ledig");
+          return el(
+            "div",
+            props,
+            x.start + "–" + x.end,
+            el("br"),
+            teacher ? "+ Legg til" : "Ledig",
+          );
         return el(
           "div",
           props,
@@ -1207,6 +1280,7 @@
               s.title,
             );
           }),
+          canAdd && el("span", { class: "add" }, "+ Legg til"),
         );
       }
 
