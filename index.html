@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>Timeplan for sangøkter</title>
+    <title>Timeplan for Anduvilla</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -795,7 +795,7 @@
           <span>♪</span><span>♫</span><span>♪</span>
         </div>
         <div class="kicker">Øvingsplan</div>
-        <h1><span class="hl">Timeplan</span> for sangøkter</h1>
+        <h1><span class="hl">Timeplan</span> for Anduvilla</h1>
         <p class="sub" id="sub">Laster timeplanen …</p>
       </header>
       <div class="seg" id="modes">
@@ -1712,7 +1712,7 @@
         const admin = state.mode === "admin";
         const props = {
           class: "slot everyone" + (admin ? " clickable" : ""),
-          title: "Alle lærere: full gjennomgang av program",
+          title: "Full gjennomgang av program, alle lærere og elever",
         };
         if (admin) {
           props.tabindex = "0";
@@ -1730,7 +1730,7 @@
           props,
           el("div", { class: "tm" }, x.start + "–" + x.end),
           el("span", { class: "all" }, "Fellesøving"),
-          el("span", { class: "who" }, "Full gjennomgang av program"),
+          el("span", { class: "who" }, "Full gjennomgang av program, alle lærere og elever"),
         );
       }
 

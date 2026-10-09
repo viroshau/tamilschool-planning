@@ -1,4 +1,4 @@
--- Timeplan for sangøkter: databaseoppsett for Supabase
+-- Timeplan for Anduvilla: databaseoppsett for Supabase
 -- Kjør alt i SQL Editor. Har du kjørt en eldre versjon med PIN, kjør bare del 2 og 4.
 -- NB: uten PIN kan alle som har lenken til siden endre timeplanen.
 
