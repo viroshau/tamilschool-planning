@@ -461,6 +461,10 @@
         overflow: hidden;
         border-radius: 14px 14px 0 0;
       }
+      .sheet {
+        --day-col: 64px;
+        --loc-min: 110px;
+      }
       .grid {
         min-width: max-content;
         padding: 6px 14px 10px 10px;
@@ -702,9 +706,90 @@
       .notice code {
         font-size: 13px;
       }
+      /* Mobil: alle steder skal få plass i bredden, så ingen må scrolle
+         sidelengs for å oppdage at det finnes flere steder. */
       @media (max-width: 560px) {
+        .sheet {
+          --day-col: 44px;
+          --loc-min: 0px;
+        }
         .grid {
-          background-position: -8px 0;
+          min-width: 0;
+          padding: 4px 6px 8px 4px;
+          background: linear-gradient(
+              90deg,
+              transparent 50px,
+              var(--margin) 50px,
+              var(--margin) 52px,
+              transparent 52px
+            )
+            no-repeat;
+        }
+        .gr {
+          gap: 5px;
+        }
+        .colhead {
+          padding: 10px 6px 6px 4px;
+        }
+        .colhead .corner {
+          width: 44px;
+          box-shadow: none;
+        }
+        .colhead .corner b {
+          font-size: 15px;
+        }
+        .colhead .loc {
+          font-size: 14px;
+          padding: 6px 3px 4px;
+          margin-left: 3px;
+          overflow-wrap: anywhere;
+        }
+        .grid > .msg {
+          padding-left: 58px;
+        }
+        .month-h,
+        .week-h,
+        .notice {
+          margin-left: 58px;
+        }
+        .day {
+          width: 44px;
+          box-shadow: 2px 2px 0 var(--shadow);
+        }
+        .day span {
+          font-size: 13px;
+        }
+        .cell {
+          margin-left: 3px;
+          min-width: 0;
+        }
+        .slot .tm {
+          padding: 3px 4px 2px;
+          font-size: 12px;
+          text-align: center;
+        }
+        .slot .song {
+          white-space: normal;
+          overflow-wrap: break-word;
+          hyphens: auto;
+          margin: 0 3px 3px;
+          padding: 2px 4px 2px 5px;
+          font-size: 12px;
+          line-height: 1.25;
+        }
+        /* fargekanten viser at det er en sang; noten tar for mye plass */
+        .slot .song::before,
+        .slot.everyone .all::before {
+          content: none;
+        }
+        .slot.free {
+          font-size: 12px;
+          padding: 5px 2px;
+        }
+        .slot .add {
+          margin: 4px 3px 0;
+          padding: 2px 3px;
+          font-size: 11px;
         }
       }
       @media (prefers-reduced-motion: reduce) {
@@ -1502,7 +1587,7 @@
         g.replaceChildren();
         hw.replaceChildren();
         document.getElementById("stickyhead").hidden = true;
-        const cols = `64px repeat(${state.locations.length}, minmax(110px, 1fr))`;
+        const cols = `var(--day-col) repeat(${state.locations.length}, minmax(var(--loc-min), 1fr))`;
         const visible = state.slots.filter(slotVisible);
 
         if (!state.locations.length) {
