@@ -10,40 +10,61 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Baloo+Thambi+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap"
       rel="stylesheet"
     />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
     <style>
       :root {
-        --bg: #f4f5f3;
-        --surface: #ffffff;
-        --surface-2: #eceeeb;
-        --ink: #1f2326;
-        --muted: #5f666c;
-        --faint: #979ea3;
-        --line: #d6dad6;
-        --accent: #2d4396;
-        --accent-bg: #e3e8f7;
-        --danger: #a3271f;
-        --ok: #2c6634;
+        --bg: #fbf6ea;
+        --paper-line: rgba(64, 104, 170, 0.09);
+        --surface: #fffdf8;
+        --surface-2: #f2ead8;
+        --ink: #2b2620;
+        --muted: #6b6155;
+        --faint: #a49985;
+        --line: #e4d9c3;
+        --edge: #3a332b;
+        --shadow: rgba(58, 51, 43, 0.85);
+        --accent: #2f4cb3;
+        --accent-bg: #e4e9fb;
+        --on-accent: #ffffff;
+        --margin: #e0605e;
+        --marker: #ffd84d;
+        --note: #fff3b0;
+        --tab-elev: #ffd84d;
+        --tab-laerer: #ffb3c7;
+        --tab-admin: #a8d8ff;
+        --danger: #b3261e;
+        --ok: #2e7d32;
         box-sizing: border-box;
         padding-top: env(safe-area-inset-top, 0px);
         padding-bottom: env(safe-area-inset-bottom, 0px);
       }
+      /* Mørk modus: tavle */
       @media (prefers-color-scheme: dark) {
         :root {
-          --bg: #15181a;
-          --surface: #1d2124;
-          --surface-2: #262b2e;
-          --ink: #e8eae8;
-          --muted: #a3a9ad;
-          --faint: #6c7378;
-          --line: #353b3f;
-          --accent: #a9b8f0;
-          --accent-bg: #252e4d;
-          --danger: #f0a39c;
-          --ok: #9fd3a6;
+          --bg: #1e2a26;
+          --paper-line: rgba(255, 255, 255, 0.035);
+          --surface: #263530;
+          --surface-2: #2e3e38;
+          --ink: #eef1e8;
+          --muted: #b6c0b5;
+          --faint: #7f8c84;
+          --line: #3c4d46;
+          --edge: #c9d2c6;
+          --shadow: rgba(0, 0, 0, 0.45);
+          --accent: #f5d76e;
+          --accent-bg: #3b3f2a;
+          --on-accent: #1e2a26;
+          --margin: #e88a88;
+          --marker: rgba(245, 215, 110, 0.35);
+          --note: #3a3f2b;
+          --tab-elev: #f5d76e;
+          --tab-laerer: #f2a5ba;
+          --tab-admin: #94c9f2;
+          --danger: #f4a7a0;
+          --ok: #a6dcaa;
         }
       }
       *,
@@ -56,10 +77,14 @@
       }
       body {
         margin: 0;
-        background: var(--bg);
         color: var(--ink);
+        background-color: var(--bg);
+        background-image:
+          linear-gradient(var(--paper-line) 1px, transparent 1px),
+          linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+        background-size: 24px 24px;
         font:
-          15px/1.45 "IBM Plex Sans",
+          15px/1.45 "Nunito",
           system-ui,
           -apple-system,
           "Segoe UI",
@@ -67,21 +92,76 @@
           sans-serif;
       }
       .wrap {
-        max-width: 980px;
+        max-width: 1000px;
         margin: 0 auto;
-        padding: 20px 16px 48px;
+        padding: 24px 16px 56px;
+      }
+
+      /* ---------- topp ---------- */
+      .masthead {
+        position: relative;
+        margin-bottom: 18px;
+      }
+      .kicker {
+        font: 700 13px/1 "Baloo Thambi 2", sans-serif;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--margin);
+        margin-bottom: 4px;
       }
       h1 {
-        font-size: 22px;
-        font-weight: 600;
-        margin: 0 0 2px;
+        font: 800 clamp(28px, 6vw, 40px) / 1.05 "Baloo Thambi 2", sans-serif;
+        margin: 0 0 6px;
         letter-spacing: -0.01em;
       }
+      h1 .hl {
+        background: linear-gradient(
+          transparent 42%,
+          var(--marker) 42%,
+          var(--marker) 80%,
+          transparent 80%
+        );
+        padding: 0 4px;
+        margin: 0 -4px;
+      }
       .sub {
-        margin: 0 0 16px;
+        margin: 0;
         color: var(--muted);
         font-size: 14px;
+        font-weight: 600;
       }
+      .notes {
+        position: absolute;
+        right: 4px;
+        top: -4px;
+        font: 700 34px/1 "Baloo Thambi 2", sans-serif;
+        pointer-events: none;
+        user-select: none;
+      }
+      .notes span {
+        display: inline-block;
+        margin-left: 6px;
+      }
+      .notes span:nth-child(1) {
+        color: var(--accent);
+        transform: rotate(-12deg) translateY(10px);
+      }
+      .notes span:nth-child(2) {
+        color: var(--margin);
+        transform: rotate(8deg);
+        font-size: 44px;
+      }
+      .notes span:nth-child(3) {
+        color: var(--tab-laerer);
+        transform: rotate(-6deg) translateY(16px);
+      }
+      @media (max-width: 560px) {
+        .notes {
+          display: none;
+        }
+      }
+
+      /* ---------- knapper og felt ---------- */
       button,
       input,
       select {
@@ -91,133 +171,192 @@
       button {
         cursor: pointer;
         background: var(--surface);
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 6px 12px;
+        border: 2px solid var(--edge);
+        border-radius: 10px;
+        padding: 5px 12px;
         font-size: 14px;
+        font-weight: 700;
+        box-shadow: 2px 2px 0 var(--shadow);
+        transition:
+          transform 0.12s,
+          box-shadow 0.12s;
       }
       button:hover {
-        border-color: var(--faint);
+        transform: translate(-1px, -1px);
+        box-shadow: 3px 3px 0 var(--shadow);
+      }
+      button:active {
+        transform: translate(1px, 1px);
+        box-shadow: 0 0 0 var(--shadow);
       }
       button:focus-visible,
       input:focus-visible,
       select:focus-visible,
       .slot:focus-visible {
-        outline: 2px solid var(--accent);
+        outline: 3px solid var(--accent);
         outline-offset: 2px;
       }
       button.primary {
         background: var(--accent);
-        color: var(--surface);
-        border-color: var(--accent);
+        color: var(--on-accent);
       }
       input,
       select {
         background: var(--surface);
-        border: 1px solid var(--line);
-        border-radius: 8px;
+        border: 2px solid var(--line);
+        border-radius: 10px;
         padding: 6px 10px;
         font-size: 14px;
         min-width: 0;
       }
+      input:focus,
+      select:focus {
+        border-color: var(--edge);
+      }
       label {
         font-size: 13px;
+        font-weight: 700;
         color: var(--muted);
         display: flex;
         flex-direction: column;
         gap: 4px;
       }
 
+      /* Modusvelger som skilleark i en perm */
       .seg {
         display: flex;
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        overflow: hidden;
-        margin-bottom: 14px;
-        background: var(--surface);
+        gap: 6px;
+        margin-bottom: -2px;
+        padding-left: 10px;
+        position: relative;
+        z-index: 1;
       }
       .seg button {
-        flex: 1;
-        border: none;
-        border-radius: 0;
-        padding: 8px;
-        background: transparent;
+        flex: 0 1 140px;
+        border-radius: 12px 12px 0 0;
+        border-bottom: none;
+        padding: 8px 12px 6px;
+        font: 700 16px/1.2 "Baloo Thambi 2", sans-serif;
+        background: var(--surface-2);
+        color: var(--muted);
+        box-shadow: none;
+        transform: translateY(4px);
       }
-      .seg button + button {
-        border-left: 1px solid var(--line);
+      .seg button:hover {
+        transform: translateY(1px);
+        box-shadow: none;
       }
       .seg button[aria-pressed="true"] {
-        background: var(--accent-bg);
-        color: var(--accent);
-        font-weight: 500;
+        transform: none;
+        color: #2b2620;
+      }
+      .seg button[data-mode="elev"][aria-pressed="true"] {
+        background: var(--tab-elev);
+      }
+      .seg button[data-mode="laerer"][aria-pressed="true"] {
+        background: var(--tab-laerer);
+      }
+      .seg button[data-mode="admin"][aria-pressed="true"] {
+        background: var(--tab-admin);
+      }
+      .seg .ico {
+        margin-right: 4px;
       }
 
       .panel {
-        margin-bottom: 12px;
+        background: var(--surface);
+        border: 2px solid var(--edge);
+        border-radius: 14px;
+        padding: 14px 14px 8px;
+        margin-bottom: 16px;
+        box-shadow: 4px 4px 0 var(--shadow);
+      }
+      .panel:empty {
+        display: none;
       }
       .row {
         display: flex;
         flex-wrap: wrap;
-        gap: 6px;
+        gap: 7px;
         align-items: center;
-        margin-bottom: 8px;
+        margin-bottom: 9px;
       }
       .teacher-btn {
         display: inline-flex;
         align-items: center;
         gap: 7px;
+        border-radius: 999px;
+        padding: 4px 13px 4px 6px;
       }
       .teacher-btn[aria-pressed="true"] {
-        outline: 2px solid var(--accent);
-        outline-offset: 0;
+        background: var(--tbg);
+        color: var(--tfg);
+        border-color: var(--tfg);
       }
       .teacher-btn.off {
         color: var(--faint);
+        border-color: var(--line);
+        box-shadow: none;
       }
       .dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 3px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
         background: var(--tfg);
         display: inline-block;
         flex: none;
+        border: 2px solid var(--surface);
+        box-shadow: 0 0 0 1.5px var(--tfg);
       }
       .chip {
         border-radius: 999px;
-        padding: 4px 12px;
+        padding: 3px 12px;
         font-size: 13px;
         color: var(--muted);
+        border-width: 1.5px;
+        border-color: var(--line);
+        box-shadow: none;
+      }
+      .chip:hover {
+        box-shadow: 2px 2px 0 var(--line);
       }
       .chip[aria-pressed="true"] {
         background: var(--tbg, var(--accent-bg));
         color: var(--tfg, var(--accent));
         border-color: var(--tfg, var(--accent));
+        box-shadow: 2px 2px 0 var(--tfg, var(--accent));
       }
       .label {
         font-size: 13px;
+        font-weight: 700;
         color: var(--muted);
         margin-right: 2px;
       }
       .inline-form {
         display: flex;
-        gap: 6px;
+        gap: 7px;
         flex-wrap: wrap;
         align-items: center;
+        margin-bottom: 8px;
       }
       .inline-form input {
         flex: 1 1 160px;
       }
 
       details.admin {
-        background: var(--surface);
-        border: 1px solid var(--line);
-        border-radius: 10px;
+        background: var(--surface-2);
+        border: 2px dashed var(--line);
+        border-radius: 12px;
         padding: 10px 12px;
         margin-bottom: 8px;
       }
+      details.admin[open] {
+        border-style: solid;
+        background: var(--surface);
+      }
       details.admin summary {
         cursor: pointer;
-        font-weight: 500;
+        font: 700 16px/1.3 "Baloo Thambi 2", sans-serif;
       }
       .form-grid {
         display: grid;
@@ -228,7 +367,7 @@
       }
       .weekdays {
         display: flex;
-        gap: 4px;
+        gap: 6px;
         flex-wrap: wrap;
       }
       .weekdays label {
@@ -241,149 +380,279 @@
       .months {
         display: flex;
         flex-wrap: wrap;
-        gap: 6px;
-        margin-bottom: 10px;
+        gap: 7px;
+        margin-bottom: 12px;
       }
       .filterbar {
         display: flex;
         justify-content: space-between;
         align-items: center;
         gap: 10px;
-        min-height: 32px;
-        margin-bottom: 8px;
+        min-height: 34px;
+        margin-bottom: 14px;
       }
       .msg {
         margin: 0;
         font-size: 14px;
         color: var(--muted);
       }
-      .msg.err {
+      #msg:not(:empty) {
+        background: var(--note);
+        color: var(--ink);
+        padding: 7px 12px;
+        border-radius: 4px 12px 12px 12px;
+        box-shadow: 2px 2px 0 var(--line);
+        font-weight: 600;
+      }
+      #msg.err {
         color: var(--danger);
       }
-      .msg.ok {
+      #msg.ok {
         color: var(--ok);
       }
 
+      /* ---------- timeplanen: et ark teipet fast ---------- */
+      .sheet {
+        position: relative;
+        background: var(--surface);
+        border: 2px solid var(--edge);
+        border-radius: 16px;
+        box-shadow: 5px 5px 0 var(--shadow);
+      }
+      .sheet::before,
+      .sheet::after {
+        content: "";
+        position: absolute;
+        top: -11px;
+        width: 86px;
+        height: 22px;
+        background: var(--marker);
+        opacity: 0.75;
+        z-index: 2;
+      }
+      .sheet::before {
+        left: 22px;
+        transform: rotate(-4deg);
+      }
+      .sheet::after {
+        right: 22px;
+        transform: rotate(3deg);
+      }
       .gridwrap {
         overflow-x: auto;
+        border-radius: 14px;
       }
       .grid {
         min-width: max-content;
+        padding: 14px 14px 10px 10px;
+        /* rød marglinje etter dagkolonnen */
+        background: linear-gradient(
+            90deg,
+            transparent 79px,
+            var(--margin) 79px,
+            var(--margin) 81px,
+            transparent 81px
+          )
+          no-repeat;
+      }
+      .grid > .msg {
+        padding: 18px 0 18px 86px;
       }
       .gr {
         display: grid;
-        gap: 5px;
+        gap: 8px;
         align-items: start;
       }
       .colhead {
         position: sticky;
         top: env(safe-area-inset-top, 0px);
-        background: var(--bg);
+        background: var(--surface);
         z-index: 1;
-        padding: 6px 0;
-        font-size: 13px;
-        color: var(--muted);
+        padding: 0 0 8px;
       }
-      .colhead div {
+      .colhead div:not(:empty) {
         text-align: center;
+        font: 700 16px/1.2 "Baloo Thambi 2", sans-serif;
+        background: var(--accent-bg);
+        color: var(--accent);
+        border-radius: 10px;
+        padding: 7px 6px 5px;
+        margin-left: 6px;
       }
       .month-h {
-        font-size: 17px;
-        font-weight: 600;
-        margin: 22px 0 4px;
+        width: fit-content;
+        font: 800 24px/1.1 "Baloo Thambi 2", sans-serif;
+        margin: 22px 0 2px 86px;
         text-transform: capitalize;
+        background: linear-gradient(
+          transparent 42%,
+          var(--marker) 42%,
+          var(--marker) 82%,
+          transparent 82%
+        );
+        padding: 0 6px;
+        transform: rotate(-1deg);
       }
       .week-h {
         font-size: 12px;
-        color: var(--faint);
-        margin: 12px 0 5px;
-        padding-top: 6px;
-        border-top: 1px solid var(--line);
+        font-weight: 600;
+        color: var(--muted);
+        margin: 14px 0 8px 86px;
+        padding-top: 8px;
+        border-top: 2px dashed var(--line);
       }
+      .week-h b {
+        display: inline-block;
+        background: var(--edge);
+        color: var(--surface);
+        border-radius: 999px;
+        padding: 0 9px;
+        margin-right: 6px;
+        font-weight: 800;
+      }
+      /* Dagen som et lite rivekalenderark */
       .day {
-        font-size: 13px;
-        line-height: 1.3;
-        padding-top: 3px;
+        width: 56px;
+        text-align: center;
+        background: var(--surface);
+        border: 2px solid var(--edge);
+        border-radius: 9px;
+        overflow: hidden;
+        line-height: 1.2;
+        box-shadow: 2px 2px 0 var(--shadow);
       }
       .day b {
-        font-weight: 500;
+        display: block;
+        background: var(--margin);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 2px 0 1px;
       }
       .day span {
-        color: var(--muted);
+        display: block;
+        font: 800 15px/1.4 "Baloo Thambi 2", sans-serif;
+        padding: 2px 0 0;
       }
       .cell {
         display: flex;
         flex-direction: column;
-        gap: 4px;
-        margin-bottom: 5px;
+        gap: 6px;
+        margin: 0 0 8px 6px;
       }
       .empty-cell {
         text-align: center;
         color: var(--faint);
         font-size: 13px;
-        padding-top: 3px;
+        padding-top: 12px;
       }
 
+      /* Økter som kartotekkort */
       .slot {
-        border: 1px solid var(--line);
-        border-radius: 7px;
+        border: 2px solid var(--edge);
+        border-radius: 10px;
         overflow: hidden;
         background: var(--surface);
         font-size: 13px;
+        padding-bottom: 4px;
+        box-shadow: 2px 2px 0 var(--shadow);
+        transition:
+          transform 0.12s,
+          box-shadow 0.12s;
       }
       .slot.free {
-        border-style: dashed;
+        border: 2px dashed var(--faint);
         background: transparent;
+        box-shadow: none;
         text-align: center;
         color: var(--muted);
-        padding: 4px;
+        padding: 5px 4px;
+        font-weight: 700;
       }
       .slot.clickable {
         cursor: pointer;
       }
       .slot.clickable:hover {
-        border-color: var(--faint);
+        transform: translate(-1px, -2px) rotate(-0.8deg);
+        box-shadow: 3px 4px 0 var(--shadow);
+      }
+      .slot.free.clickable:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        box-shadow: none;
       }
       .slot .tm {
-        padding: 3px 7px;
-        font-size: 12px;
+        padding: 3px 8px 2px;
+        font: 700 13px/1.3 "Baloo Thambi 2", sans-serif;
         color: var(--muted);
+        border-bottom: 1px solid var(--line);
+        margin-bottom: 4px;
       }
       .slot .song {
         display: block;
-        padding: 3px 7px;
-        font-weight: 500;
+        margin: 0 5px 3px;
+        padding: 2px 7px 2px 6px;
+        border-radius: 3px 8px 8px 3px;
+        border-left: 4px solid var(--tfg);
+        font-weight: 700;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         background: var(--tbg);
         color: var(--tfg);
-        border-top: 1px solid var(--surface);
+      }
+      .slot .song::before {
+        content: "♪ ";
+        opacity: 0.7;
       }
       .slot .add {
         display: block;
+        margin: 4px 5px 0;
         padding: 2px 7px;
         font-size: 12px;
+        font-weight: 800;
         color: var(--muted);
-        border-top: 1px dashed var(--line);
+        border: 1.5px dashed var(--line);
+        border-radius: 8px;
         text-align: center;
       }
       .slot.clickable:hover .add {
         color: var(--accent);
+        border-color: var(--accent);
       }
       .slot .song.dim {
         background: var(--surface-2);
         color: var(--faint);
-        font-weight: 400;
+        border-left-color: var(--line);
+        font-weight: 600;
       }
       .notice {
-        background: var(--surface);
-        border: 1px solid var(--line);
-        border-radius: 10px;
+        background: var(--note);
+        border: 2px solid var(--edge);
+        border-radius: 12px;
         padding: 16px;
+        margin: 4px 0 4px 86px;
       }
       .notice code {
         font-size: 13px;
+      }
+      @media (max-width: 560px) {
+        .grid {
+          background-position: -8px 0;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        button,
+        .slot {
+          transition: none;
+        }
+        button:hover,
+        button:active,
+        .slot.clickable:hover {
+          transform: none;
+        }
       }
 
       /* Lærerfarger: lys og mørk variant */
@@ -457,12 +726,24 @@
   </head>
   <body>
     <main class="wrap">
-      <h1>Timeplan for sangøkter</h1>
-      <p class="sub" id="sub">Laster timeplanen …</p>
+      <header class="masthead">
+        <div class="notes" aria-hidden="true">
+          <span>♪</span><span>♫</span><span>♪</span>
+        </div>
+        <div class="kicker">Øvingsplan</div>
+        <h1><span class="hl">Timeplan</span> for sangøkter</h1>
+        <p class="sub" id="sub">Laster timeplanen …</p>
+      </header>
       <div class="seg" id="modes">
-        <button data-mode="elev">Elev</button>
-        <button data-mode="laerer">Lærer</button>
-        <button data-mode="admin">Admin</button>
+        <button data-mode="elev">
+          <span class="ico" aria-hidden="true">🎒</span>Elev
+        </button>
+        <button data-mode="laerer">
+          <span class="ico" aria-hidden="true">🎵</span>Lærer
+        </button>
+        <button data-mode="admin">
+          <span class="ico" aria-hidden="true">🗂️</span>Admin
+        </button>
       </div>
       <section class="panel" id="panel"></section>
       <div class="months" id="months"></div>
@@ -470,7 +751,9 @@
         <p class="msg" id="msg"></p>
         <button id="clear" hidden>Vis alle sanger</button>
       </div>
-      <div class="gridwrap"><div class="grid" id="grid"></div></div>
+      <div class="sheet">
+        <div class="gridwrap"><div class="grid" id="grid"></div></div>
+      </div>
     </main>
 
     <script>
@@ -582,6 +865,17 @@
           String(d.getMonth() + 1).padStart(2, "0") +
           "-" +
           String(d.getDate()).padStart(2, "0")
+        );
+      }
+      function isoWeek(s) {
+        const d = parseDate(s);
+        d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7));
+        const jan4 = new Date(d.getFullYear(), 0, 4);
+        return (
+          1 +
+          Math.round(
+            ((d - jan4) / 864e5 - 3 + ((jan4.getDay() + 6) % 7)) / 7,
+          )
         );
       }
       function monthLabel(key, short) {
@@ -1185,7 +1479,14 @@
               inWeek.length > 1
                 ? fmtDate(inWeek[0]) + "–" + fmtDate(inWeek[inWeek.length - 1])
                 : fmtDate(inWeek[0]);
-            g.append(el("div", { class: "week-h" }, label));
+            g.append(
+              el(
+                "div",
+                { class: "week-h" },
+                el("b", {}, "Uke " + isoWeek(inWeek[0])),
+                label,
+              ),
+            );
           }
           const row = el(
             "div",
